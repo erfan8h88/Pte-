@@ -8,26 +8,27 @@ jobs:
     steps:
     - uses: actions/checkout@v4
         
-    - name: Set up JDK
+    - name: Verify Gradle Files
+      run: |
+        echo "Project structure:"
+        ls -la
+        echo "Gradle wrapper:"
+        ls -la gradle/wrapper/
+        
+    - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'temurin'
         
-    - name: Build APK
+    - name: Build with Gradle
       run: |
-        chmod +x gradlew
-        ./gradlew assembleDebug --stacktrace
+        # اگر gradlew وجود نداشت، آن را ایجاد می‌کند
+        [ -f gradlew ] || gradle wrapper --gradle-version 8.5
+        ./gradlew clean assembleDebug --stacktrace
         
-    - name: List build outputs (برای دیباگ)
-      run: find app/build/outputs -name "*.apk"
-      
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        path: |
-          app/build/outputs/apk/debug/*.apk
-          app/build/outputs/apk/release/*.apk
-        if-no-files-found: error
-        retention-days: 5
+        path: app/build/outputs/apk/debug/*.apk
